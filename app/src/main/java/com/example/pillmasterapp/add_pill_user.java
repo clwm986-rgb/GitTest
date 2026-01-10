@@ -1,20 +1,29 @@
 package com.example.pillmasterapp;
 
+import static com.example.pillmasterapp.login.sId;
+import static com.example.pillmasterapp.show_detail.pill;
+import static com.example.pillmasterapp.show_detail.pill_comp;
+import static com.example.pillmasterapp.show_detail.pill_img;
+
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -23,67 +32,34 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-
-
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.TimePicker;
-import android.widget.Toast;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import static com.example.pillmasterapp.login.sId;
-
-import static com.example.myapplication.show_detail.pill;
-import static com.example.myapplication.show_detail.pill_img;
-import static com.example.myapplication.show_detail.pill_comp;
-import static com.example.pillmasterapp.login.sId;
-
-import com.example.pillmasterapp.R;
-import com.example.pillmasterapp.login;
 
 public class add_pill_user extends AppCompatActivity {
 
     CheckBox Mon_rb,Sun_rb,Tue_rb,Wed_rb,Thu_rb, Fri_rb, Sat_rb;
 
     final Context context = this;
-    com.example.myapplication.search_result sr = new com.example.myapplication.search_result(); //company이름을 받아오기 위한
+    com.example.pillmasterapp.search_result sr = new com.example.pillmasterapp.search_result(); //company이름을 받아오기 위한
     login login_ = new login();  // user id를 받아오기 위한
     File img_internal_dir;
     String img_file_name;
@@ -241,8 +217,8 @@ public class add_pill_user extends AppCompatActivity {
         PendingIntent pendingIntent;
         AlarmManager alarmManager;
         PackageManager pm = this.getPackageManager();
-        ComponentName receiver = new ComponentName(this, com.example.myapplication.DeviceBootReceiver.class);
-        Intent alarmIntent = new Intent(this, com.example.myapplication.AlarmReceiver.class);
+        ComponentName receiver = new ComponentName(this, com.example.pillmasterapp.DeviceBootReceiver.class);
+        Intent alarmIntent = new Intent(this, com.example.pillmasterapp.AlarmReceiver.class);
 
         alarmIntent.putExtra("one_time", false);
         alarmIntent.putExtra("day_of_week", week);
@@ -371,7 +347,7 @@ public class add_pill_user extends AppCompatActivity {
     }
 
     public void after_back(View v) {
-        Intent intent = new Intent(getApplicationContext(), com.example.myapplication.show_detail.class);
+        Intent intent = new Intent(getApplicationContext(), com.example.pillmasterapp.show_detail.class);
         startActivity(intent);
         overridePendingTransition(R.transition.anim_slide_a, R.transition.anim_slide_b);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -410,7 +386,7 @@ public class add_pill_user extends AppCompatActivity {
         //user_id="suhyune";
         save_DB save_in = new save_DB();
         save_in.execute();
-        Intent intent = new Intent(getApplicationContext(), com.example.myapplication.after_login.class);
+        Intent intent = new Intent(getApplicationContext(), com.example.pillmasterapp.after_login.class);
         startActivity(intent);
         overridePendingTransition(R.transition.anim_slide_a, R.transition.anim_slide_b);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 
 public class ListViewAdapter extends BaseAdapter {
     // Adapter에 추가된 데이터를 저장하기 위한 ArrayList
-    private ArrayList<com.example.myapplication.ListViewItem> listViewItemList = new ArrayList<com.example.myapplication.ListViewItem>() ;
+    private ArrayList<com.example.pillmasterapp.ListViewItem> listViewItemList = new ArrayList<com.example.pillmasterapp.ListViewItem>() ;
 
     // ListViewAdapter의 생성자
     public ListViewAdapter() {
@@ -45,7 +44,7 @@ public class ListViewAdapter extends BaseAdapter {
         TextView nicknameTextView = (TextView) convertView.findViewById(R.id.name_user) ;
 
         // Data Set(listViewItemList)에서 position에 위치한 데이터 참조 획득
-        final com.example.myapplication.ListViewItem listViewItem = listViewItemList.get(position);
+        final com.example.pillmasterapp.ListViewItem listViewItem = listViewItemList.get(position);
 
         // 아이템 내 각 위젯에 데이터 반영
         pillImageView.setImageDrawable(listViewItem.getPill());
@@ -73,7 +72,7 @@ public class ListViewAdapter extends BaseAdapter {
 
     // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
     public void addItem(Drawable pill, String name, String nickname) {
-        com.example.myapplication.ListViewItem item = new com.example.myapplication.ListViewItem();
+        com.example.pillmasterapp.ListViewItem item = new com.example.pillmasterapp.ListViewItem();
 
         item.setPill(pill);
         item.setPill_name(name);

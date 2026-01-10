@@ -2,7 +2,6 @@ package com.example.pillmasterapp;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
@@ -59,7 +58,7 @@ public class ListViewItem extends AppCompatActivity {
     }
 
     public void more_button(View v) {
-        Intent intent = new Intent(getApplicationContext(), com.example.myapplication.search_result.class);
+        Intent intent = new Intent(getApplicationContext(), com.example.pillmasterapp.search_result.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);

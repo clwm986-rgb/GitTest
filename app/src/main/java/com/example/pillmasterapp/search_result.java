@@ -1,5 +1,9 @@
 package com.example.pillmasterapp;
 
+import static com.example.pillmasterapp.MainActivity.mark;
+import static com.example.pillmasterapp.MainActivity.shape;
+import static com.example.pillmasterapp.show_detail.pill;
+
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,11 +17,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,8 +27,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -36,10 +36,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
-
-import static com.example.pillmasterapp.MainActivity.mark;
-import static com.example.pillmasterapp.MainActivity.shape;
-import static com.example.myapplication.show_detail.pill;
 
 public class search_result extends AppCompatActivity {
 
@@ -342,7 +338,7 @@ public class search_result extends AppCompatActivity {
     }
 
     public void show_detail_before_login (){
-        Intent intent = new Intent(getApplicationContext(), com.example.myapplication.show_detail_before_login.class);
+        Intent intent = new Intent(getApplicationContext(), com.example.pillmasterapp.show_detail_before_login.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
