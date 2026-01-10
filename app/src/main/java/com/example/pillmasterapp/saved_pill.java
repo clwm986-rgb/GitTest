@@ -92,6 +92,65 @@ public class saved_pill extends AppCompatActivity {
             progressDialog = ProgressDialog.show(saved_pill.this,
                     "Please Wait", null, true, true);
         }
+        // saved_pill.java 안에 추가 (GetData 클래스 밑에 넣어도 됨)
+        private class LoginTask extends AsyncTask<Void, Void, String> {
+            private String email;
+            private String password;
+
+            LoginTask(String email, String password) {
+                this.email = email;
+                this.password = password;
+            }
+
+            @Override
+            protected String doInBackground(Void... unused) {
+                String param = "email=" + email + "&password=" + password;
+
+                try {
+                    URL url = new URL("http://203.255.176.79:8000/login.php");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    conn.setRequestMethod("POST");
+                    conn.setDoInput(true);
+                    conn.connect();
+
+                    OutputStream os = conn.getOutputStream();
+                    os.write(param.getBytes("UTF-8"));
+                    os.flush();
+                    os.close();
+
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    br.close();
+
+                    return sb.toString().trim();
+                } catch (Exception e) {
+                    Log.d("LoginTask", "Error: ", e);
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                if (result != null) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(result);
+                        if (jsonObject.getBoolean("success")) {
+                            Toast.makeText(saved_pill.this, "로그인 성공", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(saved_pill.this, "로그인 실패: " + jsonObject.optString("error"), Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
 
         @Override
         protected void onPostExecute(String result) {

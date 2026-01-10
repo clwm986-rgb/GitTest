@@ -9,13 +9,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -91,7 +93,7 @@ public class signup extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... unused) {
-            String param = "u_id=" + sId + "&u_pw=" + sPw;
+            String param = "email=" + sId + "&password=" + sPw;
             try {
                 URL url = new URL("http://203.255.176.79:8000/snclib_join.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -107,8 +109,8 @@ public class signup extends AppCompatActivity {
 
                 InputStream is = conn.getInputStream();
                 BufferedReader in = new BufferedReader(new InputStreamReader(is), 8 * 1024);
+                StringBuilder buff = new StringBuilder();
                 String line;
-                StringBuffer buff = new StringBuffer();
                 while ((line = in.readLine()) != null) {
                     buff.append(line).append("\n");
                 }
@@ -117,8 +119,10 @@ public class signup extends AppCompatActivity {
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
+                data = "NETWORK_ERR";
             } catch (IOException e) {
                 e.printStackTrace();
+                data = "NETWORK_ERR";
             }
             return null;
         }
@@ -126,34 +130,36 @@ public class signup extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            Log.e("RECV DATA", data);
 
-            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
-            if (data.equals("0")) {
-                alertBuilder.setMessage("서버 회원가입 완료")
-                        .setCancelable(true)
-                        .setPositiveButton("확인", (dialog, which) -> {
-                            // 서버까지 성공했을 때만 로그인 화면 이동
-                            Intent intent = new Intent(getApplicationContext(), login.class);
-                            startActivity(intent);
-                            finish();
-                        });
-            } else {
-                alertBuilder.setMessage("서버 회원가입 실패 → Firebase 계정 롤백")
-                        .setCancelable(true)
-                        .setPositiveButton("확인", (dialog, which) -> {
-                            // 서버 실패 시 Firebase 계정 삭제
-                            if (currentUser != null) {
-                                currentUser.delete().addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        Toast.makeText(getApplicationContext(),
-                                                "Firebase 계정 삭제 완료", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+            try {
+                JSONObject jsonObject = new JSONObject(data);
+                boolean success = jsonObject.getBoolean("success");
+
+                if (success) {
+                    String email = jsonObject.optString("email");
+                    Toast.makeText(signup.this, "서버 회원가입 성공: " + email, Toast.LENGTH_SHORT).show();
+
+                    // 서버까지 성공했을 때만 로그인 화면 이동
+                    Intent intent = new Intent(getApplicationContext(), login.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(signup.this, "서버 회원가입 실패 → Firebase 계정 롤백", Toast.LENGTH_SHORT).show();
+
+                    // 서버 실패 시 Firebase 계정 삭제
+                    if (currentUser != null) {
+                        currentUser.delete().addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(getApplicationContext(),
+                                        "Firebase 계정 삭제 완료", Toast.LENGTH_SHORT).show();
                             }
                         });
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Toast.makeText(signup.this, "JSON 파싱 오류", Toast.LENGTH_SHORT).show();
             }
-            alertBuilder.create().show();
         }
     }
 
@@ -167,3 +173,4 @@ public class signup extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "뒤로가기가 눌렸습니다.", Toast.LENGTH_SHORT).show();
     }
 }
+
