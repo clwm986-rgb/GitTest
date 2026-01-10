@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "192688297722",
+    "project_id": "pillmasterapp",
+    "storage_bucket": "pillmasterapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192688297722:android:3d8b86c6d2635c91a4db43",
+        "android_client_info": {
+          "package_name": "com.example.pillmasterapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEjjtIml6RpuOws9s05Qvj9oWThJth3o8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

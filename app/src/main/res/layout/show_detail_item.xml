@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@drawable/back"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="#FBFBFB">
+
+            <LinearLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:gravity="center"
+                android:background="@drawable/minor_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+
+                    android:text="품목명"
+                    android:textColor="#000000"
+                    android:textSize="23dp"
+                    android:textStyle="bold"
+                    android:layout_margin="10px"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/detail_pill_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="약이름 결과"
+                android:textColor="#000000"
+                android:textSize="20dp"
+                android:layout_marginHorizontal="10dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="#FBFBFB">
+
+
+            <LinearLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:gravity="center"
+                android:background="@drawable/minor_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="회사명"
+                    android:textColor="#000000"
+                    android:textSize="23dp"
+                    android:textStyle="bold"
+                    android:layout_margin="10px" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/company"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="회사명 결과"
+                android:textColor="#000000"
+                android:textSize="20dp"
+                android:layout_marginHorizontal="10dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FBFBFB">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:background="@drawable/minor_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:text="성분"
+                    android:textColor="#000000"
+                    android:textSize="23dp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/ingredient"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="성분명 결과"
+                android:textColor="#000000"
+                android:textSize="20dp"
+                android:layout_margin="10dp"/>
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FBFBFB">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:background="@drawable/minor_border">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:text="용법용량"
+                    android:textColor="#000000"
+                    android:textSize="23dp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/volumn"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="용법용량 결과"
+                android:textColor="#000000"
+                android:textSize="20dp"
+                android:layout_margin="10dp"/>
+
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
