@@ -1,12 +1,6 @@
 package com.example.pillmasterapp;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -24,20 +18,16 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewDebug;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.widget.Toolbar;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
-
-import com.example.pillmasterapp.R;
-import com.example.pillmasterapp.login;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -46,10 +36,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.nio.charset.Charset;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -91,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //getSupportActionBar().setHomeAsUpIndicator(R.drawable.abc_vector_test);
 
         // 레이아웃과 변수 연결
-        imageView = findViewById(R.id.iv);
+        imageView = findViewById(R.id.imageView4);
         cameraBtn = findViewById(R.id.cameraButton);
         //photoImageView = findViewById(R.id.imageView3);
         // 카메라 버튼에 리스터 추가
@@ -356,6 +345,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         overridePendingTransition(R.transition.anim_slide_in_left, R.transition.anim_slide_out_right);
         //Toast.makeText(getApplicationContext(),"로그인하기가 눌렸습니다.", Toast.LENGTH_SHORT).show();
     }
+    public void alarm_click(View v) {
+        Intent intent = new Intent(getApplicationContext(), add_pill_user.class);
+        startActivity(intent); }
+    public void signup_click(View v) {
+        Intent intent = new Intent(getApplicationContext(), signup.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        overridePendingTransition(R.transition.anim_slide_in_left, R.transition.anim_slide_out_right);
+    }
 
 
 }
+
