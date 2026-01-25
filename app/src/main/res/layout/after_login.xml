@@ -151,5 +151,20 @@
         app:layout_constraintVertical_bias="0.494"
         app:srcCompat="@drawable/pill_in_my_hand" />
 
+    <!-- 로그인된 이메일 표시용 TextView -->
+    <TextView
+        android:id="@+id/tvEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="로그인된 계정:"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.05"
+        app:layout_constraintVertical_bias="0.05"/>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

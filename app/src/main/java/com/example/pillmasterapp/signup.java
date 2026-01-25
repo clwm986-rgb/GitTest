@@ -95,7 +95,7 @@ public class signup extends AppCompatActivity {
         protected Void doInBackground(Void... unused) {
             String param = "email=" + sId + "&password=" + sPw;
             try {
-                URL url = new URL("http://203.255.176.79:8000/snclib_join.php");
+                URL url = new URL("http://10.0.2.2:8000/signup.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setRequestMethod("POST");

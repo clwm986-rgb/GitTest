@@ -60,14 +60,25 @@ public class login extends AppCompatActivity {
             return;
         }
 
-        // 🔹 Firebase 로그인 시도
+// 🔹 Firebase 로그인 시도
         fAuth.signInWithEmailAndPassword(sId, sPw)
                 .addOnCompleteListener(login.this, task -> {
                     if (task.isSuccessful()) {
                         Log.d("login", "Firebase 로그인 성공");
-                        // 🔹 Firebase 성공 후 서버 로그인 병행
+
+                        // 🔹 사용자에게 바로 반응 주기
+                        Toast.makeText(login.this, "로그인 성공!", Toast.LENGTH_SHORT).show();
+
+                        // 🔹 로그인 성공 후 다음 화면으로 이동
+                        Intent intent = new Intent(getApplicationContext(), after_login.class);
+                        startActivity(intent);
+                        overridePendingTransition(R.transition.anim_slide_in_left, R.transition.anim_slide_out_right);
+                        finish();
+
+                        // 🔹 Firebase 성공 후 서버 로그인 병행 (필요하다면 유지)
                         loginDB IDB = new loginDB();
                         IDB.execute();
+
                     } else {
                         Log.e("login", "Firebase 로그인 실패", task.getException());
                         Toast.makeText(getApplicationContext(),
@@ -75,6 +86,7 @@ public class login extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
+
     }
 
     // 🔹 서버 로그인 AsyncTask
@@ -87,7 +99,7 @@ public class login extends AppCompatActivity {
             String param = "email=" + sId + "&password=" + sPw;
             Log.e("POST", param);
             try {
-                URL url = new URL("http://203.255.176.79:8000/login.php");
+                URL url = new URL("http://10.0.2.2:8000/login.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setRequestMethod("POST");

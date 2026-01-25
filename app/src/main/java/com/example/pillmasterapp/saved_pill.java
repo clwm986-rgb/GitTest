@@ -1,278 +1,92 @@
 package com.example.pillmasterapp;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class saved_pill extends AppCompatActivity {
 
-    static String saved_pill = null;
+    public static String saved_pill = null; // show_pill에서 선택된 알약 이름
 
-    private static String TAG = "show_detail";
-
-    private static final String TAG_JSON="detail_info";
-    private static final String TAG_NAME = "name";
-    private static final String TAG_INGREDIENT = "ingredient";
-    private static final String TAG_EFFICIENCY = "efficiency";
-    private static final String TAG_CAPACITY = "capacity";
-    private static final String TAG_COMPANY = "company";
-    private static final String TAG_WARNING = "warning";
-
-    ListView mlistView;
-    ListViewAdapterDetail adapter;
-    String mJsonString;
+    private ListView mlistView;
+    private ListViewAdapterDetail adapter;
+    private TextView tab2;
+    private TextView tab3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.saved_pill);
 
-        TabHost tabHost1 = (TabHost) findViewById(R.id.saved_tabHost1) ;
+        TabHost tabHost1 = findViewById(R.id.saved_tabHost1);
         tabHost1.setup();
 
-        // 첫 번째 Tab. (탭 표시 텍스트:"TAB 1"), (페이지 뷰:"content1")
-        TabHost.TabSpec ts1 = tabHost1.newTabSpec("Tab Spec 1") ;
-        ts1.setContent(R.id.saved_content1) ;
-        ts1.setIndicator("기본 정보") ;
-        tabHost1.addTab(ts1) ;
+        // 첫 번째 Tab
+        TabHost.TabSpec ts1 = tabHost1.newTabSpec("Tab Spec 1");
+        ts1.setContent(R.id.saved_content1);
+        ts1.setIndicator("기본 정보");
+        tabHost1.addTab(ts1);
 
-        // 두 번째 Tab. (탭 표시 텍스트:"TAB 2"), (페이지 뷰:"content2")
-        TabHost.TabSpec ts2 = tabHost1.newTabSpec("Tab Spec 2") ;
-        ts2.setContent(R.id.saved_content2) ;
-        ts2.setIndicator("효능 효과") ;
-        tabHost1.addTab(ts2) ;
-        TextView tab2 = (TextView)findViewById(R.id.saved_tab2);
-        tab2.setText("효능 효과"); //여기에다가 정보 입력
+        // 두 번째 Tab
+        TabHost.TabSpec ts2 = tabHost1.newTabSpec("Tab Spec 2");
+        ts2.setContent(R.id.saved_content2);
+        ts2.setIndicator("효능 효과");
+        tabHost1.addTab(ts2);
+        tab2 = findViewById(R.id.saved_tab2);
 
-        // 세 번째 Tab. (탭 표시 텍스트:"TAB 3"), (페이지 뷰:"content3")
-        TabHost.TabSpec ts3 = tabHost1.newTabSpec("Tab Spec 3") ;
-        ts3.setContent(R.id.saved_content3) ;
-        ts3.setIndicator("주의 사항") ;
-        tabHost1.addTab(ts3) ;
-        TextView tab3 = (TextView)findViewById(R.id.saved_tab3);
-        tab3.setText("주의사항"); //여기에다가 정보 입력항
+        // 세 번째 Tab
+        TabHost.TabSpec ts3 = tabHost1.newTabSpec("Tab Spec 3");
+        ts3.setContent(R.id.saved_content3);
+        ts3.setIndicator("주의 사항");
+        tabHost1.addTab(ts3);
+        tab3 = findViewById(R.id.saved_tab3);
 
-        adapter = new  ListViewAdapterDetail();
-        mlistView = (ListView) findViewById(R.id.saved_tab1_listView);
+        adapter = new ListViewAdapterDetail();
+        mlistView = findViewById(R.id.saved_tab1_listView);
 
-        saved_pill.GetData task = new saved_pill.GetData();
-        task.execute();
-
-
+        loadPillDetail();
     }
 
-    private class GetData extends AsyncTask<Void, Void, String> {
-        ProgressDialog progressDialog;
-        String errorString = null;
+    private void loadPillDetail() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        db.collection("Users").document(uid).collection("Pills")
+                .document(saved_pill) // 선택된 알약 이름으로 문서 가져오기
+                .get()
+                .addOnSuccessListener((DocumentSnapshot doc) -> {
+                    if (doc.exists()) {
+                        String name = doc.getString("pill_name");
+                        String company = doc.getString("company");
+                        String ingredient = doc.getString("ingredient");
+                        String capacity = doc.getString("capacity");
+                        String efficiency = doc.getString("efficiency");
+                        String warning = doc.getString("warning");
 
-            progressDialog = ProgressDialog.show(saved_pill.this,
-                    "Please Wait", null, true, true);
-        }
-        // saved_pill.java 안에 추가 (GetData 클래스 밑에 넣어도 됨)
-        private class LoginTask extends AsyncTask<Void, Void, String> {
-            private String email;
-            private String password;
+                        // 기본 정보 탭 리스트뷰에 추가
+                        adapter.addItem(name, company, ingredient, capacity);
+                        mlistView.setAdapter(adapter);
 
-            LoginTask(String email, String password) {
-                this.email = email;
-                this.password = password;
-            }
+                        // 효능 효과 탭
+                        tab2.setText(efficiency != null ? efficiency : "정보 없음");
 
-            @Override
-            protected String doInBackground(Void... unused) {
-                String param = "email=" + email + "&password=" + password;
-
-                try {
-                    URL url = new URL("http://203.255.176.79:8000/login.php");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                    conn.setRequestMethod("POST");
-                    conn.setDoInput(true);
-                    conn.connect();
-
-                    OutputStream os = conn.getOutputStream();
-                    os.write(param.getBytes("UTF-8"));
-                    os.flush();
-                    os.close();
-
-                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line);
+                        // 주의사항 탭
+                        tab3.setText(warning != null ? warning : "정보 없음");
                     }
-                    br.close();
-
-                    return sb.toString().trim();
-                } catch (Exception e) {
-                    Log.d("LoginTask", "Error: ", e);
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                if (result != null) {
-                    try {
-                        JSONObject jsonObject = new JSONObject(result);
-                        if (jsonObject.getBoolean("success")) {
-                            Toast.makeText(saved_pill.this, "로그인 성공", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(saved_pill.this, "로그인 실패: " + jsonObject.optString("error"), Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            progressDialog.dismiss();
-            Log.d(TAG, "response  - " + result);
-
-            mJsonString = result;
-
-            System.out.println(mJsonString);
-            showResult();
-        }
-
-        @Override
-        protected String doInBackground(Void... unused) {
-
-            /*show result의 click한 곳 값 받아오기*/
-
-            /* 인풋 파라메터값 생성 */
-            String param = "pill="+saved_pill+"";
-            System.out.println(param);
-            Log.e("POST",param);
-
-            try {
-                /* 서버연결 */
-                URL url = new URL("http://203.255.176.79:8000/show_detail.php");
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-
-                httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoInput(true);
-                httpURLConnection.connect();
-
-
-                /* 안드로이드 -> 서버 파라메터값 전달 */
-                OutputStream outs = httpURLConnection.getOutputStream();
-                outs.write(param.getBytes("UTF-8"));
-                outs.flush();
-                outs.close();
-
-                int responseStatusCode = httpURLConnection.getResponseCode();
-                Log.d(TAG, "response code - " + responseStatusCode);
-
-                InputStream inputStream;
-                if(responseStatusCode == HttpURLConnection.HTTP_OK) {
-                    inputStream = httpURLConnection.getInputStream();
-                }
-                else{
-                    inputStream = httpURLConnection.getErrorStream();
-                }
-
-
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-                StringBuilder sb = new StringBuilder();
-                String line;
-
-                while((line = bufferedReader.readLine()) != null){
-                    sb.append(line);
-                }
-
-
-                bufferedReader.close();
-
-
-                return sb.toString().trim();
-
-
-            } catch (Exception e) {
-
-                Log.d(TAG, "InsertData: Error ", e);
-                errorString = e.toString();
-
-                return null;
-            }
-
-        }
-    }
-
-    private void showResult(){
-
-        // 리스트뷰 참조 및 Adapter달기
-
-
-        try {
-            JSONObject jsonObject = new JSONObject(mJsonString);
-            JSONArray jsonArray = jsonObject.getJSONArray(TAG_JSON);
-
-            for(int i=0;i<jsonArray.length();i++){
-
-                JSONObject item = jsonArray.getJSONObject(i);
-
-
-                String ingredient = item.getString(TAG_INGREDIENT);
-                String name = item.getString(TAG_NAME);
-                String capacity = item.getString(TAG_CAPACITY);
-                String company = item.getString(TAG_COMPANY);
-
-                String warning = item.getString(TAG_WARNING);
-                String efficiency = item.getString(TAG_EFFICIENCY);
-
-
-                adapter.addItem(name, company, ingredient, capacity);
-
-                TextView tab2 = (TextView)findViewById(R.id.saved_tab2);
-                tab2.setText(efficiency); //여기에다가 정보 입력
-
-
-                TextView tab3 = (TextView)findViewById(R.id.saved_tab3);
-                tab3.setText(warning); //여기에다가 정보 입력항
-
-            }
-
-            mlistView.setAdapter(adapter);
-
-        } catch (JSONException e) {
-
-            Log.d(TAG, "showResult : ", e);
-        }
-
+                })
+                .addOnFailureListener(e -> {
+                    tab2.setText("데이터 불러오기 실패: " + e.getMessage());
+                    tab3.setText("데이터 불러오기 실패");
+                });
     }
 
     public void back_button(View v) {
@@ -281,6 +95,6 @@ public class saved_pill extends AppCompatActivity {
         overridePendingTransition(R.transition.anim_slide_a, R.transition.anim_slide_b);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        //Toast.makeText(getApplicationContext()," 뒤로가기가 눌렸습니다.", Toast.LENGTH_SHORT).show();
     }
 }
+

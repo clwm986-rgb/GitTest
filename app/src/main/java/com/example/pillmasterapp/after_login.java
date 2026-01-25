@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -70,9 +71,12 @@ public class after_login extends AppCompatActivity implements View.OnClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.after_login);
-
+        // 🔹 로그인된 이메일 표시
+        String email = getIntent().getStringExtra("email");
+        if (email != null) { TextView tvEmail = findViewById(R.id.tvEmail);
+            tvEmail.setText("로그인된 계정: " + email); }
         // 레이아웃과 변수 연결
-        imageView = findViewById(R.id.iv);
+
         cameraBtn = findViewById(R.id.cameraButton);
 
         // 카메라 버튼에 리스터 추가

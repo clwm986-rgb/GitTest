@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.example.pillmasterapp'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.pillmasterapp"
-        minSdk 17
-        targetSdk 33
+        minSdk 23
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -30,41 +30,45 @@ android {
 }
 
 dependencies {
-        // Import the BoM for the Firebase platform
-        implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
-
-        // Add the dependency for the Firebase Authentication library
-        // When using the BoM, you don't specify versions in Firebase library dependencies
-        implementation("com.google.firebase:firebase-auth")
-
-        // Also add the dependencies for the Credential Manager libraries and specify their versions
-        implementation("androidx.credentials:credentials:1.3.0")
-        implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
-        implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    // Firebase BoM (한 번만 선언)
     implementation platform('com.google.firebase:firebase-bom:34.7.0')
+    implementation 'com.google.firebase:firebase-firestore:24.11.1'
+    // Firebase 라이브러리 (버전 지정하지 않음, BoM이 관리)
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-database'
+    implementation 'com.google.firebase:firebase-storage'
+    implementation 'com.google.firebase:firebase-firestore'
     implementation 'com.google.firebase:firebase-analytics'
-    implementation'com.github.bumptech.glide:glide:4.11.0'
-    annotationProcessor'com.github.bumptech.glide:compiler:4.11.0'
-    implementation 'com.google.firebase:firebase-auth-ktx'
-    implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
-    implementation 'com.google.firebase:firebase-storage-ktx'
-    implementation platform('com.google.firebase:firebase-bom:31.2.0')
-    implementation 'com.google.firebase:firebase-database-ktx'
+    implementation 'com.google.firebase:firebase-appcheck-debug'
+    implementation 'com.google.firebase:firebase-appcheck-playintegrity'
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'com.google.firebase:firebase-appcheck-debug:19.0.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+
+    // AndroidX 라이브러리
     implementation 'androidx.gridlayout:gridlayout:1.1.0'
     implementation 'androidx.viewpager:viewpager:1.1.0'
-    implementation 'com.android.volley:volley:1.2.1'
     implementation 'androidx.mediarouter:mediarouter:1.6.0'
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.10.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'com.google.firebase:firebase-storage:20.3.0'
-    implementation 'com.google.firebase:firebase-database:22.0.1'
-    implementation 'com.google.firebase:firebase-auth:24.0.1'
-    implementation 'com.google.firebase:firebase-firestore:24.9.1'
+
+    // 기타
+    implementation 'com.android.volley:volley:1.2.1'
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+
+    // 테스트
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
-    implementation platform('com.google.firebase:firebase-bom:34.7.0')
-    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-appcheck-playintegrity:17.0.0'
+
+
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+
+
 }

@@ -1,99 +1,84 @@
 package com.example.pillmasterapp;
 
+import static com.example.pillmasterapp.login.sId;
+
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
-import static com.example.pillmasterapp.login.sId;
-import static com.example.pillmasterapp.show_detail.pill;
 
-public class ListViewAdapterResult extends BaseAdapter  {
+public class ListViewAdapterResult extends BaseAdapter {
 
-    public int pos = 0;
+    private ArrayList<ListViewItem> listViewItemList = new ArrayList<>();
 
-    // Adapter에 추가된 데이터를 저장하기 위한 ArrayList
-    private ArrayList<com.example.pillmasterapp.ListViewItem> listViewItemList = new ArrayList<com.example.pillmasterapp.ListViewItem>() ;
+    public ListViewAdapterResult() { }
 
-    // ListViewAdapter의 생성자
-    public ListViewAdapterResult() {
-
-    }
-
-    // Adapter에 사용되는 데이터의 개수를 리턴. : 필수 구현
     @Override
     public int getCount() {
-        return listViewItemList.size() ;
+        return listViewItemList.size();
     }
 
-    // position에 위치한 데이터를 화면에 출력하는데 사용될 View를 리턴. : 필수 구현
+    @Override
+    public Object getItem(int position) {
+        return listViewItemList.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        final int pos = position;
         final Context context = parent.getContext();
 
-        // "listview_item" Layout을 inflate하여 convertView 참조 획득.
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            if (sId == null)
+            if (sId == null) {
                 convertView = inflater.inflate(R.layout.result_item_before_login, parent, false);
-            else
+            } else {
                 convertView = inflater.inflate(R.layout.result_item, parent, false);
+            }
         }
 
-        // 화면에 표시될 View(Layout이 inflate된)으로부터 위젯에 대한 참조 획득
-        ImageView pillImageView = (ImageView) convertView.findViewById(R.id.pill_img) ;
-        TextView pillNameTextView = (TextView) convertView.findViewById(R.id.pill_name) ;
+        ImageView pillImageView = convertView.findViewById(R.id.pill_img);
+        TextView pillNameTextView = convertView.findViewById(R.id.pill_name);
 
-        // Data Set(listViewItemList)에서 position에 위치한 데이터 참조 획득
-        final com.example.pillmasterapp.ListViewItem listViewItem = listViewItemList.get(position);
+        ListViewItem listViewItem = listViewItemList.get(position);
 
-        // 아이템 내 각 위젯에 데이터 반영
-        pillImageView.setImageDrawable(listViewItem.getPill());
         pillNameTextView.setText(listViewItem.getPill_name());
+
+        // Firebase imageUrl 있으면 Glide로 로딩
+        if (listViewItem.getImageUrl() != null && !listViewItem.getImageUrl().isEmpty()) {
+            Glide.with(context)
+                    .load(listViewItem.getImageUrl())
+                    .placeholder(R.drawable.main_logo)  // 프로젝트에 있는 기본 이미지
+                    .error(R.drawable.main_logo)
+                    .into(pillImageView);
+        }
 
         return convertView;
     }
 
-    // 지정한 위치(position)에 있는 데이터와 관계된 아이템(row)의 ID를 리턴. : 필수 구현
-    @Override
-    public long getItemId(int position) {
-        return position ;
-    }
-
-    // 지정한 위치(position)에 있는 데이터 리턴 : 필수 구현
-    @Override
-    public Object getItem(int position) {
-        return listViewItemList.get(position) ;
-    }
-
-    public String getPillName(int position){
+    public String getPillName(int position) {
         return listViewItemList.get(position).getPill_name();
     }
 
-    public Drawable getPillImg(int position){
-        return listViewItemList.get(position).getPill();
-    }
-
-    // 아이템 데이터 추가를 위한 함수. 개발자가 원하는대로 작성 가능.
-    public void addItem(Drawable pill, String name) {
-        com.example.pillmasterapp.ListViewItem item = new com.example.pillmasterapp.ListViewItem();
-
-        item.setPill(pill);
+    // URL 기반 추가
+    public void addItem(String imageUrl, String name) {
+        ListViewItem item = new ListViewItem();
+        item.setImageUrl(imageUrl);
         item.setPill_name(name);
-
         listViewItemList.add(item);
     }
-
-    public int getPosition(){
-        return pos;
-    }
-
 }
+
+
+

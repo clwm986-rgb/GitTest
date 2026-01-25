@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Socket socket;
     private DataOutputStream dos;
     private DataInputStream dis;
-    private String ip = "203.255.176.79";
-    private int port = 8088; //pill_img_search_server.py
+    private String ip = "172.29.58.139"; //PC IPv4 주소
+    private int port = 5000; //pill_img_search_server.py
     private String img_path;
 
     final String TAG = getClass().getSimpleName();
@@ -322,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.example.myapplication.provider",
+                        "com.example.pillmasterapp.provider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);

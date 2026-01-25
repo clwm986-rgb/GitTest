@@ -20,7 +20,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -38,25 +37,27 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
-import java.io.BufferedReader;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class add_pill_user extends AppCompatActivity {
 
-    CheckBox Mon_rb,Sun_rb,Tue_rb,Wed_rb,Thu_rb, Fri_rb, Sat_rb;
+    CheckBox Mon_rb, Sun_rb, Tue_rb, Wed_rb, Thu_rb, Fri_rb, Sat_rb;
 
     final Context context = this;
     com.example.pillmasterapp.search_result sr = new com.example.pillmasterapp.search_result(); //company이름을 받아오기 위한
@@ -90,7 +91,7 @@ public class add_pill_user extends AppCompatActivity {
         pill_name_info = findViewById(R.id.textView6);
         button = findViewById(R.id.button); ////
         mImageView = findViewById(R.id.imageView);
-        button.setOnClickListener(new View.OnClickListener(){
+        button.setOnClickListener(new View.OnClickListener() {
             @Override //이미지 불러오기기
             public void onClick(View v) {
                 photoDialogRadio(); //갤러리에서 불러오기 or 사진찍어서 불러오기
@@ -98,7 +99,7 @@ public class add_pill_user extends AppCompatActivity {
         });
 
 
-        final TimePicker picker=(TimePicker)findViewById(R.id.timePicker);
+        final TimePicker picker = (TimePicker) findViewById(R.id.timePicker);
         picker.setIs24HourView(false);
         et_nickname = (EditText) findViewById(R.id.nick);
         // 앞서 설정한 값으로 보여주기 , 없으면 디폴트 값은 현재시간
@@ -121,11 +122,10 @@ public class add_pill_user extends AppCompatActivity {
 
         //System.out.println("SDK_INT!!: "+ Build.VERSION.SDK_INT);
 
-        if (Build.VERSION.SDK_INT >= 23 ){
+        if (Build.VERSION.SDK_INT >= 23) {
             picker.setHour(pre_hour);
             picker.setMinute(pre_minute);
-        }
-        else{
+        } else {
             picker.setCurrentHour(pre_hour);
             picker.setCurrentMinute(pre_minute);
         }
@@ -135,7 +135,7 @@ public class add_pill_user extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                nickname=et_nickname.getText().toString().trim();
+                nickname = et_nickname.getText().toString().trim();
                 System.out.println
                         ("========================================================");
                 System.out.println(nickname);
@@ -151,22 +151,19 @@ public class add_pill_user extends AppCompatActivity {
 
                 int hour, hour_24, minute;
                 String am_pm;
-                if (Build.VERSION.SDK_INT >= 23 ){
+                if (Build.VERSION.SDK_INT >= 23) {
                     hour_24 = picker.getHour();
                     minute = picker.getMinute();
-                }
-                else{
+                } else {
                     hour_24 = picker.getCurrentHour();
                     minute = picker.getCurrentMinute();
                 }
-                if(hour_24 > 12) {
+                if (hour_24 > 12) {
                     am_pm = "PM";
                     hour = hour_24 - 12;
-                }
-                else
-                {
+                } else {
                     hour = hour_24;
-                    am_pm="AM";
+                    am_pm = "AM";
                 }
 
                 // 현재 지정된 시간으로 알람 시간 설정
@@ -187,32 +184,30 @@ public class add_pill_user extends AppCompatActivity {
 
                 //  Preference에 설정한 값 저장
                 SharedPreferences.Editor editor = getSharedPreferences("daily alarm", MODE_PRIVATE).edit();
-                editor.putLong("nextNotifyTime", (long)calendar.getTimeInMillis());
+                editor.putLong("nextNotifyTime", (long) calendar.getTimeInMillis());
                 editor.apply();
 
                 diaryNotification(calendar);
             }
 
         });
-        if (pill!=null){
+        if (pill != null) {
             pill_name = pill;
             pill_name_info.setText(pill);
             mImageView.setImageDrawable(pill_img);
-            img = ((BitmapDrawable)pill_img).getBitmap();
-            TextView comp_textview = (TextView)findViewById(R.id.textView5);
+            img = ((BitmapDrawable) pill_img).getBitmap();
+            TextView comp_textview = (TextView) findViewById(R.id.textView5);
             comp_textview.setText(pill_comp);
         }
 
 
-
-
     }
-    void diaryNotification(Calendar calendar)
-    {
+
+    void diaryNotification(Calendar calendar) {
         Boolean dailyNotify = true; // 무조건 알람을 사용
 
         boolean[] week
-                = {false, Sun_rb.isChecked(),Mon_rb.isChecked(), Tue_rb.isChecked(),Wed_rb.isChecked(),Thu_rb.isChecked(),Fri_rb.isChecked(),Sat_rb.isChecked() };
+                = {false, Sun_rb.isChecked(), Mon_rb.isChecked(), Tue_rb.isChecked(), Wed_rb.isChecked(), Thu_rb.isChecked(), Fri_rb.isChecked(), Sat_rb.isChecked()};
 
         PendingIntent pendingIntent;
         AlarmManager alarmManager;
@@ -329,6 +324,7 @@ public class add_pill_user extends AppCompatActivity {
             }
         }
     }
+
     //카메라로 촬영한 이미지를파일로 저장해주는 함수
     private File createImageFile() throws IOException {
         // Create an image file name
@@ -354,7 +350,7 @@ public class add_pill_user extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
-    private void saveToInternalStorage(){
+    private void saveToInternalStorage() {
         System.out.println("saveToInternalStorage>>");
         img_file_name = user_id.concat("_").concat(nickname).concat(".jpg");
         File img_file_path = new File(img_internal_dir, img_file_name);
@@ -363,97 +359,58 @@ public class add_pill_user extends AppCompatActivity {
         try {
             fos = new FileOutputStream(img_file_path);
             img.compress(Bitmap.CompressFormat.PNG, 100, fos);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
                 fos.close();
-            } catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    //<여기부터 mysql 연동>
-    public void save(){
-
-        saveToInternalStorage(); //save image in user phone inner storage
-        nickname=et_nickname.getText().toString().trim();
-        //nickname = "test";
-
-        user_id = sId;
-        //user_id="suhyune";
-        save_DB save_in = new save_DB();
-        save_in.execute();
-        Intent intent = new Intent(getApplicationContext(), com.example.pillmasterapp.after_login.class);
-        startActivity(intent);
-        overridePendingTransition(R.transition.anim_slide_a, R.transition.anim_slide_b);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-
-    }
     /* DB에 저장 */
-    public class save_DB extends AsyncTask<Void, Integer, Void> {
+    private void save() {
+        nickname = et_nickname.getText().toString().trim();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        String data = "";
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference()
+                .child("pill_images/" + uid + "/" + pill_name + ".jpg");
 
-        @Override
-        protected Void doInBackground(Void... unused) {
+        if (img != null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            img.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] data = baos.toByteArray();
 
-            /* 인풋 파라메터값 생성 */
-            String param = "u_id=" + user_id + "&u_nick=" + nickname + "&pill_name=" + pill_name + "&img_path=" + img_file_name+"";
-            try {
-                /* 서버연결 */
-                URL url = new URL(
-                        "http://203.255.176.79:8000/add_pillinfo.php");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.connect();
+            storageRef.putBytes(data)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            Map<String, Object> pillData = new HashMap<>();
+                            pillData.put("pill_name", pill_name);
+                            pillData.put("nickname", nickname);
+                            pillData.put("company", pill_comp);
+                            pillData.put("imageUrl", uri.toString());
+                            pillData.put("alarmTime", System.currentTimeMillis());
 
-                /* 안드로이드 -> 서버 파라메터값 전달 */
-                OutputStream outs = conn.getOutputStream();
-                outs.write(param.getBytes("UTF-8"));
-                outs.flush();
-                outs.close();
-
-                /* 서버 -> 안드로이드 파라메터값 전달 */
-                InputStream is = null;
-                BufferedReader in = null;
-
-                is = conn.getInputStream();
-                in = new BufferedReader(new InputStreamReader(is), 8 * 1024);
-                String line = null;
-                StringBuffer buff = new StringBuffer();
-                while ((line = in.readLine()) != null) {
-                    buff.append(line + "\n");
-                }
-                data = buff.toString().trim();
-                Log.e("RECV DATA", data);
-                androidx.appcompat.app.AlertDialog.Builder alertBuilder = new androidx.appcompat.app.AlertDialog.Builder(context);
-                if (data == "0"){
-                    alertBuilder
-
-                            .setMessage("저장완료!")
-                            .setCancelable(true)
-                            .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    finish();
-                                }
-                            });
-                    androidx.appcompat.app.AlertDialog dialog = alertBuilder.create();
-                    dialog.show();
-                }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
+                            db.collection("Users").document(uid)
+                                    .collection("Pills").add(pillData)
+                                    .addOnSuccessListener(docRef -> {
+                                        Toast.makeText(add_pill_user.this, "알약 저장 성공!", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(getApplicationContext(), after_login.class);
+                                        startActivity(intent);
+                                        overridePendingTransition(R.transition.anim_slide_in_left, R.transition.anim_slide_out_right);
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(add_pill_user.this, "Firestore 저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(add_pill_user.this, "이미지 업로드 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
         }
     }
 }
