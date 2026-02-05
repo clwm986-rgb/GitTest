@@ -1,220 +1,163 @@
 package com.example.pillmasterapp;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.bumptech.glide.Glide;
+
+import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static com.example.pillmasterapp.show_detail.pill;
-
 public class show_detail_before_login extends AppCompatActivity {
 
-    private static String TAG = "show_detail";
-
-    private static final String TAG_JSON="detail_info";
-    private static final String TAG_NAME = "name";
-    private static final String TAG_INGREDIENT = "ingredient";
-    private static final String TAG_EFFICIENCY = "efficiency";
-    private static final String TAG_CAPACITY = "capacity";
-    private static final String TAG_COMPANY = "company";
-    private static final String TAG_WARNING = "warning";
+    private static final String TAG = "show_detail_before_login";
 
     ListView mlistView;
     ListViewAdapterDetail adapter;
-    String mJsonString;
+    TextView tab2, tab3;
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.show_detail_before_login);
 
-        TabHost tabHost1 = (TabHost) findViewById(R.id.tabHost1) ;
-        tabHost1.setup() ;
+        TabHost tabHost1 = findViewById(R.id.tabHost1);
+        tabHost1.setup();
 
+        // 첫 번째 Tab
+        TabHost.TabSpec ts1 = tabHost1.newTabSpec("Tab Spec 1");
+        ts1.setContent(R.id.content1);
+        ts1.setIndicator("기본 정보");
+        tabHost1.addTab(ts1);
 
-        // 첫 번째 Tab. (탭 표시 텍스트:"TAB 1"), (페이지 뷰:"content1")
-        TabHost.TabSpec ts1 = tabHost1.newTabSpec("Tab Spec 1") ;
-        ts1.setContent(R.id.content1) ;
-        ts1.setIndicator("기본 정보") ;
-        tabHost1.addTab(ts1) ;
+        // 두 번째 Tab
+        TabHost.TabSpec ts2 = tabHost1.newTabSpec("Tab Spec 2");
+        ts2.setContent(R.id.content2);
+        ts2.setIndicator("효능 효과");
+        tabHost1.addTab(ts2);
+        tab2 = findViewById(R.id.tab2);
 
+        // 세 번째 Tab
+        TabHost.TabSpec ts3 = tabHost1.newTabSpec("Tab Spec 3");
+        ts3.setContent(R.id.content3);
+        ts3.setIndicator("주의 사항");
+        tabHost1.addTab(ts3);
+        tab3 = findViewById(R.id.tab3);
 
-        // 두 번째 Tab. (탭 표시 텍스트:"TAB 2"), (페이지 뷰:"content2")
-        TabHost.TabSpec ts2 = tabHost1.newTabSpec("Tab Spec 2") ;
-        ts2.setContent(R.id.content2) ;
-        ts2.setIndicator("효능 효과") ;
-        tabHost1.addTab(ts2) ;
-        TextView tab2 = (TextView)findViewById(R.id.tab2);
-        tab2.setText("효능 효과"); //여기에다가 정보 입력
+        adapter = new ListViewAdapterDetail();
+        mlistView = findViewById(R.id.tab1_listView_before);
 
+        // 🔥 Intent로 전달받은 알약 이름
+        String pillName = getIntent().getStringExtra("pillName");
 
-        // 세 번째 Tab. (탭 표시 텍스트:"TAB 3"), (페이지 뷰:"content3")
-        TabHost.TabSpec ts3 = tabHost1.newTabSpec("Tab Spec 3") ;
-        ts3.setContent(R.id.content3) ;
-        ts3.setIndicator("주의 사항") ;
-        tabHost1.addTab(ts3) ;
-        TextView tab3 = (TextView)findViewById(R.id.tab3);
-        tab3.setText("주의사항"); //여기에다가 정보 입력항
-
-        adapter = new  ListViewAdapterDetail();
-        mlistView = (ListView) findViewById(R.id.tab1_listView_before);
-
-        GetData task = new GetData();
-        task.execute();
-
+        if (pillName != null) {
+            loadPillData(pillName);      // Firestore 데이터
+            loadKFDAApiData(pillName);   // 식약처 API 데이터
+        } else {
+            Log.w(TAG, "pillName is null - no pill selected");
+        }
     }
 
-    private class GetData extends AsyncTask<Void, Void, String> {
-        ProgressDialog progressDialog;
-        String errorString = null;
+    // Firestore에서 데이터 가져오기
+    private void loadPillData(String pillName) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        db.collection("medicines")
+                .whereEqualTo("pill_name", pillName)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        for (DocumentSnapshot doc : query) {
+                            showFirestoreResult(doc);
+                        }
+                    } else {
+                        Log.d(TAG, "No Firestore document found for pill_name: " + pillName);
+                    }
+                })
+                .addOnFailureListener(e -> Log.w(TAG, "Error getting document", e));
+    }
 
-            progressDialog = ProgressDialog.show(show_detail_before_login.this,
-                    "Please Wait", null, true, true);
-        }
+    private void showFirestoreResult(DocumentSnapshot document) {
+        String name = document.getString("pill_name");
+        String company = document.getString("company");
+        String ingredient = document.getString("ingredient");
+        String capacity = document.getString("capacity");
+        String imageUrl = document.getString("imageUrl");
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
+        // 기본 정보 탭 리스트뷰에 추가
+        adapter.addItem(name, company, ingredient, capacity);
+        mlistView.setAdapter(adapter);
 
-            progressDialog.dismiss();
-            Log.d(TAG, "response  - " + result);
+        // 이미지 표시
+        ImageView pillImage = findViewById(R.id.imageView_before);
+        Glide.with(this)
+                .load(imageUrl)
+                .into(pillImage);
+    }
 
-            mJsonString = result;
-
-            System.out.println(mJsonString);
-            showResult();
-        }
-
-        @Override
-        protected String doInBackground(Void... unused) {
-
-            /*show result의 click한 곳 값 받아오기*/
-
-            /* 인풋 파라메터값 생성 */
-            String param = "pill="+pill+"";
-            System.out.println(param);
-            Log.e("POST",param);
-
+    // 식약처 API 호출
+    private void loadKFDAApiData(String pillName) {
+        new Thread(() -> {
             try {
-                /* 서버연결 */
-                URL url = new URL("http://203.255.176.79:8000/show_detail.php");
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                String apiUrl = "https://api.foodsafetykorea.go.kr/pillInfo?name=" + pillName;
 
-                httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setDoInput(true);
-                httpURLConnection.connect();
+                URL url = new URL(apiUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
 
-
-                /* 안드로이드 -> 서버 파라메터값 전달 */
-                OutputStream outs = httpURLConnection.getOutputStream();
-                outs.write(param.getBytes("UTF-8"));
-                outs.flush();
-                outs.close();
-
-                int responseStatusCode = httpURLConnection.getResponseCode();
-                Log.d(TAG, "response code - " + responseStatusCode);
-
-                InputStream inputStream;
-                if(responseStatusCode == HttpURLConnection.HTTP_OK) {
-                    inputStream = httpURLConnection.getInputStream();
-                }
-                else{
-                    inputStream = httpURLConnection.getErrorStream();
-                }
-
-
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
                 StringBuilder sb = new StringBuilder();
                 String line;
-
-                while((line = bufferedReader.readLine()) != null){
+                while ((line = reader.readLine()) != null) {
                     sb.append(line);
                 }
+                reader.close();
 
+                String response = sb.toString();
+                Log.d(TAG, "KFDA API response: " + response);
 
-                bufferedReader.close();
-
-
-                return sb.toString().trim();
-
+                runOnUiThread(() -> showApiResult(response));
 
             } catch (Exception e) {
-
-                Log.d(TAG, "InsertData: Error ", e);
-                errorString = e.toString();
-
-                return null;
+                Log.e(TAG, "Error calling KFDA API", e);
             }
-
-        }
+        }).start();
     }
 
-    private void showResult(){
-
-        // 리스트뷰 참조 및 Adapter달기
-
-
+    private void showApiResult(String response) {
         try {
-            JSONObject jsonObject = new JSONObject(mJsonString);
-            JSONArray jsonArray = jsonObject.getJSONArray(TAG_JSON);
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray items = jsonObject.getJSONArray("items");
 
-            for(int i=0;i<jsonArray.length();i++){
+            if (items.length() > 0) {
+                JSONObject item = items.getJSONObject(0);
 
-                JSONObject item = jsonArray.getJSONObject(i);
+                String efficiency = item.optString("EFFICIENCY", "정보 없음");
+                String warning = item.optString("WARNING", "정보 없음");
 
-
-                String ingredient = item.getString(TAG_INGREDIENT);
-                String name = item.getString(TAG_NAME);
-                String capacity = item.getString(TAG_CAPACITY);
-                String company = item.getString(TAG_COMPANY);
-
-                String warning = item.getString(TAG_WARNING);
-                String efficiency = item.getString(TAG_EFFICIENCY);
-
-
-                adapter.addItem(name, company, ingredient, capacity);
-
-                TextView tab2 = (TextView)findViewById(R.id.tab2);
-                tab2.setText(efficiency); //여기에다가 정보 입력
-
-
-                TextView tab3 = (TextView)findViewById(R.id.tab3);
-                tab3.setText(warning); //여기에다가 정보 입력항
-
+                tab2.setText(efficiency);
+                tab3.setText(warning);
             }
 
-            mlistView.setAdapter(adapter);
-
         } catch (JSONException e) {
-
-            Log.d(TAG, "showResult : ", e);
+            Log.e(TAG, "JSON parsing error", e);
         }
-
     }
 
     public void show_detail_before_login_back(View v) {
@@ -223,6 +166,6 @@ public class show_detail_before_login extends AppCompatActivity {
         overridePendingTransition(R.transition.anim_slide_a, R.transition.anim_slide_b);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        //Toast.makeText(getApplicationContext()," 뒤로가기가 눌렸습니다.", Toast.LENGTH_SHORT).show();
     }
 }
+

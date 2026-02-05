@@ -1,7 +1,5 @@
 package com.example.pillmasterapp;
 
-import static com.example.pillmasterapp.show_detail.pill;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -11,7 +9,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -30,24 +27,22 @@ public class search_result extends AppCompatActivity {
         adapter = new ListViewAdapterResult();
         mlistView.setAdapter(adapter);
 
-        loadSearchResults();
+        // 🔹 검색 조건 (예: 모양, 색상) — 이전 화면에서 Intent로 전달받음
+        String shape = getIntent().getStringExtra("shape");
+        String color = getIntent().getStringExtra("color");
+
+        loadSearchResults(shape, color);
     }
 
     /**
      * Firestore에서 검색 결과 불러오기
      */
-    private void loadSearchResults() {
+    private void loadSearchResults(String shape, String color) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String uid;
 
-        // 로그인 여부 확인
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        } else {
-            uid = "guest"; // 로그인 안 된 경우 guest로 처리
-        }
-
-        db.collection("Users").document(uid).collection("SearchResults")
+        db.collection("medicines")
+                .whereEqualTo("shape", shape)
+                .whereEqualTo("color", color)
                 .get()
                 .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
                     if (querySnapshot.isEmpty()) {
@@ -63,8 +58,11 @@ public class search_result extends AppCompatActivity {
 
                     // 아이템 클릭 → 상세 화면 이동
                     mlistView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
-                        pill = adapter.getPillName(position);
-                        show_detail_before_login();
+                        String selectedName = adapter.getPillName(position);
+                        Intent intent = new Intent(getApplicationContext(), show_detail_before_login.class);
+                        intent.putExtra("pillName", selectedName); // ✅ pillName으로 통일
+                        startActivity(intent);
+                        overridePendingTransition(R.transition.anim_slide_in_left, R.transition.anim_slide_out_right);
                     });
                 })
                 .addOnFailureListener(e -> {
@@ -84,16 +82,4 @@ public class search_result extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     }
-
-    /**
-     * 로그인 전 상세보기 화면 이동
-     */
-    public void show_detail_before_login() {
-        Intent intent = new Intent(getApplicationContext(), show_detail_before_login.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        overridePendingTransition(R.transition.anim_slide_in_left, R.transition.anim_slide_out_right);
-    }
 }
-
