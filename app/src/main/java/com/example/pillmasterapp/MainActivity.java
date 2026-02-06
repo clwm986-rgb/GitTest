@@ -176,7 +176,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     IValue output = module.forward(IValue.from(inputTensor));
                     Tensor outputTensor = output.toTensor();
                     float[] scores = outputTensor.getDataAsFloatArray();
-                    result_text.setText("인식 결과: " + "decodedText");
+                    String decodedText = ctcDecode(scores, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+                    result_text.setText("인식 결과: " + decodedText);
+
                 }
             }
         } catch (Exception e) {
@@ -426,4 +428,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         return null;
     }
+    // CRNN 결과를 문자열로 변환하는 CTC 디코딩 함수
+    private String ctcDecode(float[] scores, String alphabet) {
+        StringBuilder sb = new StringBuilder();
+        int prevIndex = -1;
+        int numClasses = alphabet.length();
+        int timeSteps = scores.length / numClasses;
+
+        for (int t = 0; t < timeSteps; t++) {
+            int maxIndex = 0;
+            float maxScore = -Float.MAX_VALUE;
+            for (int c = 0; c < numClasses; c++) {
+                float score = scores[t * numClasses + c];
+                if (score > maxScore) {
+                    maxScore = score;
+                    maxIndex = c;
+                }
+            }
+            // 같은 글자가 연속되면 하나만 추가
+            if (maxIndex != prevIndex && maxIndex < alphabet.length()) {
+                sb.append(alphabet.charAt(maxIndex));
+            }
+            prevIndex = maxIndex;
+        }
+        return sb.toString();
+    }
+
 }
