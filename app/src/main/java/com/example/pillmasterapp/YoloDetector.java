@@ -11,6 +11,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class YoloDetector {
+
     private Interpreter interpreter;
 
     // 모델 로드

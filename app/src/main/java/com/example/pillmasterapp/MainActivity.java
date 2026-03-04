@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int GALLERY_REQUEST = 200;
     static final int REQUEST_TAKE_PHOTO = 1;
 
+
     private Module module;   // CRNN 모델 객체
 
     /* 이미지 socket 통신 부분 */
@@ -65,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final String TAG = getClass().getSimpleName();
     ImageView imageView;
     ImageButton cameraBtn;
+
+    OverlayView overlayView;
     TextView result_text;
     Button buttonEvent;
     static int check_flag = 1;
@@ -132,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 setContentView(R.layout.after_camera);
                 buttonEvent = findViewById(R.id.searchbutton);
+                overlayView = findViewById(R.id.overlay);
                 buttonEvent.setOnTouchListener((view, motionEvent) -> {
                     if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                         buttonEvent.setBackgroundColor(Color.parseColor("#3EB6A0"));
@@ -187,28 +191,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // YOLO 추론 실행 함수
-    private void runYolo(Bitmap bitmap) {
-        try {
-            YoloDetector detector = new YoloDetector(getAssets());
-            float[][][][] input = preprocessBitmap(bitmap, 640, 640);
-            float[][][] results = detector.runInference(input);
+    private YoloDetector detector;
 
-            for (int i = 0; i < results[0].length; i++) {
-                float[] prediction = results[0][i];
-                float confidence = prediction[4];
-                if (confidence > 0.25f) {
-                    int classId = getMaxClass(prediction);
-                    float x = prediction[0];
-                    float y = prediction[1];
-                    float w = prediction[2];
-                    float h = prediction[3];
-                    Log.d(TAG, "탐지됨: class=" + classId + " conf=" + confidence +
-                            " bbox=(" + x + "," + y + "," + w + "," + h + ")");
-                }
-            }
-            detector.close();
+    private void initYolo() {
+        try {
+            detector = new YoloDetector(getAssets());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void runYolo(Bitmap bitmap) {
+
+        if (detector == null) return;
+
+        int imgW = bitmap.getWidth();
+        int imgH = bitmap.getHeight();
+
+        float[][][][] input = preprocessBitmap(bitmap, 640, 640);
+        float[][][] results = detector.runInference(input);
+
+        for (int i = 0; i < results[0].length; i++) {
+
+            float[] pred = results[0][i];
+
+            float objConf = pred[4];
+            if (objConf < 0.25f) continue;
+
+            int classId = getMaxClass(pred);
+            float classScore = pred[5 + classId];
+
+            float score = objConf * classScore;
+            if (score < 0.25f) continue;
+
+            float cx = pred[0] * imgW;
+            float cy = pred[1] * imgH;
+            float w  = pred[2] * imgW;
+            float h  = pred[3] * imgH;
+
+            float left   = cx - w / 2;
+            float top    = cy - h / 2;
+            float right  = cx + w / 2;
+            float bottom = cy + h / 2;
+
+            Log.d(TAG, "detect class=" + classId +
+                    " score=" + score +
+                    " box=(" + left + "," + top + "," + right + "," + bottom + ")");
         }
     }
 
